@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Google Sheets Change Tracker</title>
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+ 
+</head>
+<body class="mx-20,bg-green-200">
+  <h1>Google Sheets Change Tracker</h1>
+  
+  <div id="changes">
+    <p>Loading changes...</p>
+  </div>
+
+  <script>
+    // Function to fetch and display changes
+    async function getChanges() {
+      try {
+        const response = await fetch('/changes');
+        const changes = await response.json();
+        
+        let html = '';
+        
+        if (changes.length === 0) {
+          html = '<p>No changes detected yet. Make a change in your Google Sheet!</p>';
+        } else {
+          html = `
+            <p>Total changes detected: ${changes.length}</p>
+            <table>
+              <tr>
+                <th>Sheet</th>
+                <th>Row</th>
+                <th>Column</th>
+                <th>New Value</th>
+                <th>Timestamp</th>
+              </tr>
+          `;
+          
+          changes.forEach(change => {
+            html += `
+              <tr>
+                <td>${change.sheetName}</td>
+                <td>${change.row}</td>
+                <td>${change.column}</td>
+                <td>${change.newValue}</td>
+                <td>${change.timestamp}</td>
+              </tr>
+            `;
+          });
+          
+          html += '</table>';
+        }
+        
+        document.getElementById('changes').innerHTML = html;
+      } catch (error) {
+        document.getElementById('changes').innerHTML = `<p>Error loading changes: ${error.message}</p>`;
+      }
+    }
+    
+    // Load changes immediately and then refresh every 5 seconds
+    getChanges();
+    setInterval(getChanges, 5000);
+  </script>
+</body>
+</html>
