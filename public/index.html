@@ -1,18 +1,39 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Google Sheets Change Tracker</title>
-  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
- 
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sheet Tracker</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap">
 </head>
-<body class="bg-green-300">
-  <h1>Google Sheets Change Tracker</h1>
-  
-  <div id="changes">
-    <p>Loading changes...</p>
+<body class="bg-gray-50 min-h-screen font-['Inter']">
+  <div class="max-w-6xl mx-auto px-4 py-12">
+    <header class="mb-12">
+      <h1 class="text-3xl font-light text-gray-800 tracking-tight">Sheet Tracker</h1>
+      <p class="text-gray-500 mt-2">Monitoring changes in real-time</p>
+    </header>
+
+    <div id="changes" class="bg-white rounded-lg shadow-sm p-6">
+      <div class="animate-pulse flex space-x-4">
+        <div class="flex-1 space-y-4 py-1">
+          <div class="h-4 bg-gray-200 rounded w-3/4"></div>
+          <div class="space-y-2">
+            <div class="h-4 bg-gray-200 rounded"></div>
+            <div class="h-4 bg-gray-200 rounded w-5/6"></div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 
   <script>
+    // Function to format timestamps
+    function formatTimestamp(timestamp) {
+      const date = new Date(timestamp);
+      return date.toLocaleString();
+    }
+    
     // Function to fetch and display changes
     async function getChanges() {
       try {
@@ -22,38 +43,71 @@
         let html = '';
         
         if (changes.length === 0) {
-          html = '<p>No changes detected yet. Make a change in your Google Sheet!</p>';
+          html = `
+            <div class="text-center py-12">
+              <svg class="w-12 h-12 mx-auto text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+              <p class="mt-4 text-gray-500">No changes detected yet</p>
+              <p class="text-sm text-gray-400">Make a change in your Google Sheet to see it here</p>
+            </div>
+          `;
         } else {
           html = `
-            <p>Total changes detected: ${changes.length}</p>
-            <table>
-              <tr>
-                <th>Sheet</th>
-                <th>Row</th>
-                <th>Column</th>
-                <th>New Value</th>
-                <th>Timestamp</th>
-              </tr>
+            <div class="flex items-center justify-between mb-6">
+              <h2 class="text-lg font-medium text-gray-900">Recent Changes</h2>
+              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                ${changes.length} updates
+              </span>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="min-w-full divide-y divide-gray-200">
+                <thead>
+                  <tr>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sheet</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Location</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Value</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time</th>
+                  </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
           `;
           
-          changes.forEach(change => {
+          changes.forEach((change, index) => {
+            const isEven = index % 2 === 0;
             html += `
-              <tr>
-                <td>${change.sheetName}</td>
-                <td>${change.row}</td>
-                <td>${change.column}</td>
-                <td>${change.newValue}</td>
-                <td>${change.timestamp}</td>
+              <tr class="${isEven ? 'bg-white' : 'bg-gray-50'}">
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${change.sheetName}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  Row ${change.row}, Col ${change.column}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">${change.newValue}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${formatTimestamp(change.timestamp)}</td>
               </tr>
             `;
           });
           
-          html += '</table>';
+          html += `
+                </tbody>
+              </table>
+            </div>
+            <div class="text-xs text-gray-400 mt-4 text-right">Auto-refreshes every 5 seconds</div>
+          `;
         }
         
         document.getElementById('changes').innerHTML = html;
       } catch (error) {
-        document.getElementById('changes').innerHTML = `<p>Error loading changes: ${error.message}</p>`;
+        document.getElementById('changes').innerHTML = `
+          <div class="bg-red-50 border-l-4 border-red-400 p-4">
+            <div class="flex">
+              <div class="ml-3">
+                <p class="text-sm text-red-700">
+                  Error loading changes: ${error.message}
+                </p>
+              </div>
+            </div>
+          </div>
+        `;
       }
     }
     
