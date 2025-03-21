@@ -24,7 +24,6 @@ app.post('/', (req, res) => {
 app.get('/changes', (req, res) => {
     res.json(changes);
   });
-// Also keep the /sheet-changes endpoint for flexibility
 app.post('/sheet-changes', (req, res) => {
   const changeData = req.body;
   
@@ -35,7 +34,7 @@ app.post('/sheet-changes', (req, res) => {
   res.status(200).send({ message: 'Change recorded successfully' });
 });
 
-// Add a homepage for browser visits
+// homepage,browser visits
 app.get('/', (req, res) => {
     res.sendFile(__dirname + '/public/index.html');
   });
